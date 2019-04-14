@@ -17,9 +17,9 @@ template_folder="templates2"
 
 seat_number = sys.argv[1]
 
-#pages = convert_from_path("uploaded_files/"+seat_number,dpi=200, output_folder=input_folder, first_page=None, last_page=None, fmt='jpg')
-#for filename in os.listdir(input_folder): 
-#	os.rename(input_folder+"/"+filename, input_folder+"/"+filename[-5:]) 
+pages = convert_from_path("../uploaded_files/"+seat_number,dpi=200, output_folder=input_folder, first_page=None, last_page=None, fmt='jpg')
+for filename in os.listdir(input_folder): 
+	os.rename(input_folder+"/"+filename, input_folder+"/"+filename[-5:]) 
 
 templateFiles=glob.glob(template_folder+"/*.jpg")
 sampleFiles=glob.glob(input_folder+"/*.jpg")

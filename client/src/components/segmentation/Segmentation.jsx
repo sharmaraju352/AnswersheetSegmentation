@@ -7,7 +7,6 @@ import {
 } from '../../actions/segmentationActions';
 import InputGroup from '../common/InputGroup';
 import Spinner from '../common/Spinner';
-import { SERVER_URL } from '../../utils/config';
 
 class Segmentation extends Component {
   constructor(props) {
@@ -47,8 +46,8 @@ class Segmentation extends Component {
     this.setState({ [e.target.name]: e.target.value });
   };
   render() {
-    const { errors, seat_number, selectedQuestion } = this.state;
-    const { file_uploaded, loading, questions } = this.props.segmentation;
+    const { errors, seat_number } = this.state;
+    const { file_uploaded, loading } = this.props.segmentation;
 
     let content;
     if (loading) {

@@ -7,7 +7,6 @@ const path = require('path');
 const EvaluationResult = require('../../model/evaluation_result');
 const exec = util.promisify(require('child_process').exec);
 const readdir = util.promisify(fs.readdir);
-
 const router = express.Router();
 
 router.post(
@@ -54,7 +53,7 @@ router.post(
               res.json({ questions });
             })
             .catch(error => {
-              console.log(eror);
+              console.log(error);
             });
         });
       });
@@ -121,10 +120,71 @@ router.post(
 router.get('/evaluate/getEvaluationResult', (req, res) => {});
 
 router.get('/:seat_number/answer/:question', (req, res) => {
-  const fileName = req.params.seat_number + '_Q' + req.params.question + '.jpg';
+  const fileName =
+    req.params.seat_number + '_Q' + req.params.question + '_1' + '.jpg';
   res.sendFile(path.join(__dirname, '..', '..', 'output2', fileName));
 });
 
+router.get('/getEvaluationResults', (req, res) => {
+  let evaluationResult = {};
+  let marks = 0;
+  EvaluationResult.find({}, (err, results) => {
+    if (!err) {
+      results.forEach(result => {
+        marks = marks + result.marks;
+        evaluationResult[result.seat_number] = {};
+        getThumbnailQuestion(result.seat_number)
+          .then(thumbnailQuestion => {
+            evaluationResult[result.seat_number].marks = marks;
+            evaluationResult[
+              result.seat_number
+            ].thumbnailQuestion = thumbnailQuestion;
+            res.json({ results: evaluationResult });
+          })
+          .catch(err => console.log(err));
+      });
+    } else {
+      throw err;
+    }
+  });
+});
+
+router.get('/getDetailedEvaluationResults/:seat_number', (req, res) => {
+  const seat_number = req.params.seat_number;
+  const detailedResult = {};
+  EvaluationResult.find({}, (err, results) => {
+    if (!err) {
+      results.forEach(result => {
+        if (result.seat_number === seat_number) {
+          detailedResult[result.question_number] = result.marks;
+        }
+      });
+    }
+    res.json({ detailedResult });
+  });
+});
+
+getThumbnailQuestion = seat_number => {
+  return new Promise(resolve => {
+    readdir('output2')
+      .then(files => {
+        for (var i = 0; i < files.length; i++) {
+          const file = files[i];
+          const roll_number = file.split('_')[0];
+          const question = file
+            .split('_')[1]
+            .split('.')[0]
+            .charAt(1);
+          if (seat_number == roll_number) {
+            resolve(question);
+          }
+        }
+      })
+      .catch(error => {
+        console.log(eror);
+      });
+  });
+};
 executePythonCode = async seat_number => {
   const { stdout, stderr } = await exec(
     `python template_matching_multiple.py ${seat_number}`

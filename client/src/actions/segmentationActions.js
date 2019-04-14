@@ -1,7 +1,6 @@
 import axios from 'axios';
 import {
   SET_UPLOAD_PROGRESS,
-  SET_QUESTIONS,
   CLEAR_QUESTIONS,
   START_LOADING,
   STOP_LOADING

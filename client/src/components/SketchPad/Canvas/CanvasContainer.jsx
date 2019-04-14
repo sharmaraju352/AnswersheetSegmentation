@@ -4,8 +4,6 @@ import { connect } from 'react-redux';
 import Canvas from './Canvas';
 
 class CanvasContainer extends React.Component {
-  /* MouseEvent section */
-
   isMouseDown = false;
 
   onMouseDown = ({ nativeEvent: { offsetX: x, offsetY: y } }) => {
@@ -50,7 +48,7 @@ class CanvasContainer extends React.Component {
     const { width, height, background } = this.props;
     return (
       <div style={{ width, height }}>
-        <img src={background} width="460" height="500" />
+        <img alt="Canvas" src={background} width="460" height="500" />
         <Canvas
           ref={instance => (this.canvas = instance)}
           penColor={this.props.penColor}

@@ -23,7 +23,15 @@ export default class Evaluation extends Component {
     axios
       .get('/api/segmentation/getAnswersheets')
       .then(res => {
-        this.setState({ questions: res.data.questions });
+        this.setState({
+          questions: res.data.questions,
+          selectedQuestion: Object.keys(res.data.questions)[0]
+        });
+        console.log(
+          'Selected Question from state: ',
+          this.state.selectedQuestion
+        );
+        console.log('questions from state: ', this.state.questions);
       })
       .catch(err =>
         console.log('Error while fetching answersheets for evaluation')
@@ -82,6 +90,7 @@ export default class Evaluation extends Component {
       questionMarksMap,
       givenMarks
     } = this.state;
+
     let content;
     content = (
       <div>
@@ -161,24 +170,21 @@ export default class Evaluation extends Component {
                         {questions[selectedQuestion].map(
                           (seat_number, index) => (
                             <div className="column">
-                              <a
-                                className="thumbnail"
+                              <img
+                                alt="Thumbnail"
+                                key={index}
+                                className="img-thumbnail"
+                                height="250rem"
+                                width="250rem"
+                                src={
+                                  SERVER_URL +
+                                  'api/segmentation/' +
+                                  seat_number +
+                                  '/answer/' +
+                                  selectedQuestion
+                                }
                                 onClick={() => this.toggleModal(seat_number)}
-                              >
-                                <img
-                                  key={index}
-                                  className="img-thumbnail"
-                                  height="250rem"
-                                  width="250rem"
-                                  src={
-                                    SERVER_URL +
-                                    'api/segmentation/' +
-                                    seat_number +
-                                    '/answer/' +
-                                    selectedQuestion
-                                  }
-                                />
-                              </a>
+                              />
                             </div>
                           )
                         )}

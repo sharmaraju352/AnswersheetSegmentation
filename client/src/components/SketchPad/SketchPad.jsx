@@ -3,10 +3,6 @@ import PropTypes from 'prop-types';
 import CanvasContainer from './Canvas/CanvasContainer';
 
 class SketchPad extends React.Component {
-  constructor(props) {
-    super(props);
-  }
-
   render() {
     const { background } = this.props;
 

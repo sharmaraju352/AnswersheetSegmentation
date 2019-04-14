@@ -2,7 +2,6 @@ import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
-import Spinner from '../common/Spinner';
 
 class Dashboard extends Component {
   componentDidMount() {}
@@ -15,6 +14,13 @@ class Dashboard extends Component {
           <p className="lead text-muted">Welcome {user.name}</p>
           <Link to="/segmentation" className="btn btn-lg btn-info">
             Upload Answersheet
+          </Link>
+          <Link
+            to="/results"
+            style={{ marginLeft: '10px' }}
+            className="btn btn-lg btn-info"
+          >
+            Evaluation Result
           </Link>
         </div>
       );

@@ -15,6 +15,7 @@ import './App.css';
 import Dashboard from './components/dashboard/Dashboard';
 import Segmentation from './components/segmentation/Segmentation';
 import Evaluation from './components/evaluation/Evaluation';
+import Results from './components/results/Results';
 
 if (localStorage.jwtToken) {
   //set auth token header
@@ -54,6 +55,9 @@ class App extends Component {
                   path="/segmentation"
                   component={Segmentation}
                 />
+              </Switch>
+              <Switch>
+                <PrivateRoute exact path="/results" component={Results} />
               </Switch>
               <Switch>
                 <PrivateRoute exact path="/evaluation" component={Evaluation} />
