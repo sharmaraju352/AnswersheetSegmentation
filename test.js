@@ -1,33 +1,12 @@
-const fs = require('fs-extra');
 const util = require('util');
-const readdir = util.promisify(fs.readdir);
-
-getThumbnailQuestion = seat_number => {
-  return new Promise(resolve => {
-    readdir('output2')
-      .then(files => {
-        for (var i = 0; i < files.length; i++) {
-          const file = files[i];
-          const roll_number = file.split('_')[0];
-          const question = file
-            .split('_')[1]
-            .split('.')[0]
-            .charAt(1);
-          if (seat_number == roll_number) {
-            resolve(question);
-          }
-        }
-      })
-      .catch(error => {
-        console.log(eror);
-      });
-  });
+const exec = util.promisify(require('child_process').exec);
+executePythonCode = async seat_number => {
+  const { stdout, stderr } = await exec(
+    `cd python`,
+    `python template_matching6.py ${seat_number}`
+  );
+  console.log('stdout: ', stdout);
+  console.log('stderr: ', stderr);
 };
 
-function asyncCall() {
-  console.log('calling');
-  var result = getThumbnailQuestion('S0124').then(res => console.log(res));
-  // expected output: 'resolved'
-}
-
-asyncCall();
+executePythonCode('S0124.pdf');

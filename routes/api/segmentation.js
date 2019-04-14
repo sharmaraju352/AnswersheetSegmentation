@@ -187,7 +187,7 @@ getThumbnailQuestion = seat_number => {
 };
 executePythonCode = async seat_number => {
   const { stdout, stderr } = await exec(
-    `python template_matching_multiple.py ${seat_number}`
+    `python template_matching6.py ${seat_number}`
   );
 };
 
