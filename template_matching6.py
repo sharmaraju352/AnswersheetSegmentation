@@ -45,6 +45,7 @@ for sampleFile in sampleFiles:
 	img_gray = cv2.cvtColor(img_rgb, cv2.COLOR_BGR2GRAY)
 
 	didMatchWithAtleastOneTemplate=False
+	notMatchedCount=0
 
 	for templateFile in templateFiles:
 

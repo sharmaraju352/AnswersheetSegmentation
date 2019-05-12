@@ -71,18 +71,19 @@ router.get('/getAnswersheets', (req, res) => {
           .split('_')[1]
           .split('.')[0]
           .charAt(1);
-        if (questions[question] !== undefined) {
-          if (questions[question].indexOf(roll_number) === -1) {
-            questions[question].push(roll_number);
+        const occurance = file.split('_')[2].split('.')[0];
+        if (questions[roll_number] !== undefined) {
+          if (questions[roll_number].indexOf(question) === -1) {
+            questions[roll_number].push(question + '_' + occurance);
           }
         } else {
-          questions[question] = [roll_number];
+          questions[roll_number] = [question + '_' + occurance];
         }
       });
       res.json({ questions });
     })
     .catch(error => {
-      console.log(eror);
+      console.log(error);
     });
 });
 
@@ -117,11 +118,16 @@ router.post(
   }
 );
 
-router.get('/evaluate/getEvaluationResult', (req, res) => {});
-
-router.get('/:seat_number/answer/:question', (req, res) => {
+router.get('/:seat_number/answer/:question/:occurance', (req, res) => {
   const fileName =
-    req.params.seat_number + '_Q' + req.params.question + '_1' + '.jpg';
+    req.params.seat_number +
+    '_Q' +
+    req.params.question +
+    '_' +
+    req.params.occurance +
+    '.jpg';
+
+  console.log('fileName: ', fileName);
   res.sendFile(path.join(__dirname, '..', '..', 'output2', fileName));
 });
 

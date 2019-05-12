@@ -3,35 +3,54 @@ import { Modal, ModalHeader, ModalBody, ModalFooter } from 'reactstrap';
 import { SERVER_URL } from '../../utils/config';
 import axios from 'axios';
 import SketchPad from '../SketchPad/SketchPad';
-export default class Evaluation extends Component {
+import PropTypes from 'prop-types';
+import { connect } from 'react-redux';
+class Evaluation extends Component {
   constructor(props) {
     super(props);
     this.state = {
       questions: {
-        1: ['S0123']
+        S0124: ['1_1', '1_2']
       },
       questionMarksMap: {
         1: 10
       },
-      selectedQuestion: 1,
       selectedSeatNumber: '',
+      selectedOccurance: '',
       givenMarks: '',
-      modal: false
+      modal: false,
+      questionNumberToShow: ''
     };
   }
   componentDidMount() {
+    const questionNumberToShow = this.props.auth.user.name.charAt(7);
+    let questionsObject = {};
+    let seat_number;
     axios
       .get('/api/segmentation/getAnswersheets')
       .then(res => {
-        this.setState({
-          questions: res.data.questions,
-          selectedQuestion: Object.keys(res.data.questions)[0]
-        });
-        console.log(
-          'Selected Question from state: ',
-          this.state.selectedQuestion
-        );
-        console.log('questions from state: ', this.state.questions);
+        const questions = res.data.questions;
+        console.log('result from API: ', questions);
+        for (var key in questions) {
+          if (questions.hasOwnProperty(key)) {
+            for (var i = 0; i < questions[key].length; i++) {
+              const q = questions[key][i].split('_')[0];
+              if (q === questionNumberToShow) {
+                if (questionsObject.hasOwnProperty(key)) {
+                  if (questionsObject[key].indexOf(questions[key][i]) === -1) {
+                    questionsObject[key].push(questions[key][i]);
+                  }
+                } else {
+                  questionsObject[key] = [questions[key][i]];
+                  if (!seat_number) {
+                    seat_number = key;
+                  }
+                }
+              }
+            }
+          }
+        }
+        console.log('processing result: ', questionsObject);
       })
       .catch(err =>
         console.log('Error while fetching answersheets for evaluation')
@@ -40,25 +59,33 @@ export default class Evaluation extends Component {
     axios
       .get('/api/segmentation/getQuestionMarksMap')
       .then(res => {
-        this.setState({ questionMarksMap: res.data.questionMarksMap });
+        this.setState({
+          questionMarksMap: res.data.questionMarksMap,
+          questionNumberToShow,
+          questions: questionsObject,
+          selectedSeatNumber: seat_number
+        });
       })
       .catch(err =>
         console.log('Error while fetching answersheets for evaluation')
       );
   }
-  toggleModal = seat_number => {
+  toggleModal = (seat_number, occurance) => {
+    console.log('selected seat_number in toggleModel: ', seat_number);
     this.setState({
       modal: !this.state.modal,
-      selectedSeatNumber: seat_number
+      selectedSeatNumber: seat_number,
+      selectedOccurance: occurance,
+      givenMarks: ''
     });
   };
   submitMarks = () => {
-    const { selectedQuestion, selectedSeatNumber, givenMarks } = this.state;
+    const { questionNumberToShow, selectedSeatNumber, givenMarks } = this.state;
     this.toggleModal();
     axios
       .post(
         '/api/segmentation/evaluate/' +
-          selectedQuestion +
+          questionNumberToShow +
           '/' +
           selectedSeatNumber +
           '/' +
@@ -70,9 +97,9 @@ export default class Evaluation extends Component {
       .catch(err => console.log('Error while evaluating answersheet'));
   };
   onMarksChange = e => {
-    const { questionMarksMap, selectedQuestion } = this.state;
+    const { questionMarksMap, questionNumberToShow } = this.state;
     if (e.target.value) {
-      if (parseInt(e.target.value) > questionMarksMap[selectedQuestion]) {
+      if (parseInt(e.target.value) > questionMarksMap[questionNumberToShow]) {
         this.setState({ givenMarks: '' });
         alert('Given marks cannot be greater than out of marks');
       } else {
@@ -82,15 +109,35 @@ export default class Evaluation extends Component {
       this.setState({ givenMarks: '' });
     }
   };
+  getThumbnails = () => {
+    const { questions, questionNumberToShow } = this.state;
+    let thumbs = [];
+    for (var key in questions) {
+      if (questions.hasOwnProperty(key)) {
+        for (var i = 0; i < questions[key].length; i++) {
+          if (questions[key][i].split('_')[0] == questionNumberToShow) {
+            let thumb = {};
+            thumb.seat_number = key;
+            thumb.question = questionNumberToShow;
+            thumb.occurance = questions[key][i].split('_')[1];
+            thumbs.push(thumb);
+          }
+        }
+      }
+    }
+    console.log('thumbs: ', thumbs);
+    return thumbs;
+  };
   render() {
     const {
-      questions,
-      selectedQuestion,
+      questionNumberToShow,
       selectedSeatNumber,
+      selectedOccurance,
       questionMarksMap,
       givenMarks
     } = this.state;
 
+    console.log('This.state: ', this.state);
     let content;
     content = (
       <div>
@@ -100,7 +147,7 @@ export default class Evaluation extends Component {
           className={this.props.className}
         >
           <ModalHeader toggle={this.toggleModal}>
-            Evaluate Question {selectedQuestion}
+            Evaluate Question {questionNumberToShow}
           </ModalHeader>
           <ModalBody>
             <SketchPad
@@ -109,7 +156,9 @@ export default class Evaluation extends Component {
                 'api/segmentation/' +
                 selectedSeatNumber +
                 '/answer/' +
-                selectedQuestion
+                questionNumberToShow +
+                '/' +
+                selectedOccurance
               }
             />
           </ModalBody>
@@ -130,7 +179,7 @@ export default class Evaluation extends Component {
                 <input
                   type="number"
                   className="form-control"
-                  value={questionMarksMap[selectedQuestion]}
+                  value={questionMarksMap[questionNumberToShow]}
                   disabled
                 />
               </div>
@@ -147,18 +196,9 @@ export default class Evaluation extends Component {
               <div className="col-md-2 col-sm-12 col-xs-12">
                 <div className="master_list">
                   <div className="list-group">
-                    {Object.keys(questions).map((question, index) => (
-                      <button
-                        key={index}
-                        type="button"
-                        className="list-group-item"
-                        onClick={() => {
-                          this.setState({ selectedQuestion: question });
-                        }}
-                      >
-                        Question {question}
-                      </button>
-                    ))}
+                    <button type="button" className="list-group-item">
+                      Question {questionNumberToShow}
+                    </button>
                   </div>
                 </div>
               </div>
@@ -167,8 +207,8 @@ export default class Evaluation extends Component {
                   <article className="grow fadeIn">
                     <div className="container">
                       <div className="row">
-                        {questions[selectedQuestion].map(
-                          (seat_number, index) => (
+                        {this.getThumbnails(questionNumberToShow).map(
+                          (thumb, index) => (
                             <div className="column">
                               <img
                                 alt="Thumbnail"
@@ -179,11 +219,18 @@ export default class Evaluation extends Component {
                                 src={
                                   SERVER_URL +
                                   'api/segmentation/' +
-                                  seat_number +
+                                  thumb.seat_number +
                                   '/answer/' +
-                                  selectedQuestion
+                                  thumb.question +
+                                  '/' +
+                                  thumb.occurance
                                 }
-                                onClick={() => this.toggleModal(seat_number)}
+                                onClick={() =>
+                                  this.toggleModal(
+                                    thumb.seat_number,
+                                    thumb.occurance
+                                  )
+                                }
                               />
                             </div>
                           )
@@ -201,3 +248,13 @@ export default class Evaluation extends Component {
     return <div>{content}</div>;
   }
 }
+
+Evaluation.propTypes = {
+  auth: PropTypes.object.isRequired
+};
+
+const mapStateToProps = state => ({
+  auth: state.auth
+});
+
+export default connect(mapStateToProps)(Evaluation);
