@@ -104,7 +104,7 @@ router.get('/getQuestionMarksMap', (req, res) => {
 });
 
 router.post(
-  '/evaluate/:selectedQuestion/:selectedSeatNumber/:givenMarks',
+  '/evaluate/:selectedQuestion/:selectedOccurance/:selectedSeatNumber/:givenMarks',
   (req, res) => {
     console.log('selectedQuestion: ', req.params.selectedQuestion);
     console.log('selectedSeatNumber: ', req.params.selectedSeatNumber);
@@ -112,6 +112,7 @@ router.post(
     const evaluationResult = new EvaluationResult({
       seat_number: req.params.selectedSeatNumber,
       question_number: req.params.selectedQuestion,
+      occurance: req.params.selectedOccurance,
       marks: req.params.givenMarks
     });
     evaluationResult.save().then(result => res.json(result));
@@ -139,12 +140,13 @@ router.get('/getEvaluationResults', (req, res) => {
       results.forEach(result => {
         marks = marks + result.marks;
         evaluationResult[result.seat_number] = {};
-        getThumbnailQuestion(result.seat_number)
-          .then(thumbnailQuestion => {
+        getThumbnailQuestionAndOccurance(result.seat_number)
+          .then(thumbnailQuestionAndOccurance => {
             evaluationResult[result.seat_number].marks = marks;
-            evaluationResult[
-              result.seat_number
-            ].thumbnailQuestion = thumbnailQuestion;
+            evaluationResult[result.seat_number].thumbnailQuestion =
+              thumbnailQuestionAndOccurance[0];
+            evaluationResult[result.seat_number].questionOccurance =
+              thumbnailQuestionAndOccurance[1];
             res.json({ results: evaluationResult });
           })
           .catch(err => console.log(err));
@@ -170,19 +172,21 @@ router.get('/getDetailedEvaluationResults/:seat_number', (req, res) => {
   });
 });
 
-getThumbnailQuestion = seat_number => {
+getThumbnailQuestionAndOccurance = seat_number => {
   return new Promise(resolve => {
+    let thumbnailQuestionAndOccurance = [];
     readdir('output2')
       .then(files => {
         for (var i = 0; i < files.length; i++) {
           const file = files[i];
           const roll_number = file.split('_')[0];
-          const question = file
-            .split('_')[1]
-            .split('.')[0]
-            .charAt(1);
+          const question = file.split('_')[1].charAt(1);
+          const occurance = file.split('_')[2].split('.')[0];
           if (seat_number == roll_number) {
-            resolve(question);
+            thumbnailQuestionAndOccurance.push(question);
+            thumbnailQuestionAndOccurance.push(occurance);
+            resolve(thumbnailQuestionAndOccurance);
+            break;
           }
         }
       })

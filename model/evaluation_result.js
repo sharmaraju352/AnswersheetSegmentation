@@ -10,6 +10,10 @@ const EvaluationResultSchema = new Schema({
     type: Number,
     required: true
   },
+  occurance: {
+    type: Number,
+    required: true
+  },
   marks: {
     type: Number,
     required: true

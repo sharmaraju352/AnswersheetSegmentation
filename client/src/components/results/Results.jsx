@@ -23,7 +23,7 @@ class Results extends Component {
     axios
       .get('/api/segmentation/getEvaluationResults')
       .then(res => {
-        console.log(res.data);
+        console.log('Evaluation result: ', res.data);
         this.setState({ results: res.data.results });
       })
       .catch(err => console.log('Error: ', err));
@@ -49,6 +49,9 @@ class Results extends Component {
       selectedSeatNumber
     } = this.state;
     let content;
+
+    console.log('detailedResult: ', detailedResult);
+
     if (!showDetails) {
       content = Object.keys(results).map((key, index) => (
         <div className="row" key={index}>
@@ -63,7 +66,9 @@ class Results extends Component {
                 'api/segmentation/' +
                 key +
                 '/answer/' +
-                results[key].thumbnailQuestion
+                results[key].thumbnailQuestion +
+                '/' +
+                results[key].questionOccurance
               }
               onClick={() => this.showDetails(key)}
             />
@@ -87,7 +92,8 @@ class Results extends Component {
                 'api/segmentation/' +
                 selectedSeatNumber +
                 '/answer/' +
-                key
+                key +
+                '/1'
               }
             />
             <h3>

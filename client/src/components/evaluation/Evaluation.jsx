@@ -80,12 +80,19 @@ class Evaluation extends Component {
     });
   };
   submitMarks = () => {
-    const { questionNumberToShow, selectedSeatNumber, givenMarks } = this.state;
+    const {
+      questionNumberToShow,
+      selectedOccurance,
+      selectedSeatNumber,
+      givenMarks
+    } = this.state;
     this.toggleModal();
     axios
       .post(
         '/api/segmentation/evaluate/' +
           questionNumberToShow +
+          '/' +
+          selectedOccurance +
           '/' +
           selectedSeatNumber +
           '/' +
